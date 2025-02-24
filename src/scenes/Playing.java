@@ -7,22 +7,26 @@ import static main.GameStates.*;
 import helps.LevelBuild;
 import main.Game;
 import managers.TileManager;
+import objects.Tile;
+import ui.BottomBar;
 import ui.MyButton;
 
 public class Playing extends GameScene implements SceneMethods {
 	private int[][] lvl;
 	private TileManager tileManager;
-	private MyButton bMenu;
+	
+	
+	private BottomBar bottomBar;
+	private Tile selectedTile;
+	private int mouseX,mouseY;
+	private boolean drawSelect;
+	private int lastTileX,lastTileY,lastTileId;
 	
 	public Playing(Game game) {
 		super(game);
-		initButtons();
 		lvl=LevelBuild.getLevelData();
 		tileManager=new TileManager();
-	}
-
-	private void initButtons() {
-		bMenu = new MyButton("Menu", 2, 2, 100, 30);
+		bottomBar=new BottomBar(0, 640, 640, 100,this);
 	}
 
 	@Override
@@ -33,39 +37,76 @@ public class Playing extends GameScene implements SceneMethods {
 				g.drawImage(tileManager.getSprite(id), x * 32, y * 32, null);
 			}
 		}
-		drawButtons(g);
+		bottomBar.draw(g);
+		drawSelectedTile(g);
 	}
-	private void drawButtons(Graphics g) {
-		bMenu.draw(g);
+	public void setSelectedTile(Tile tile) {
+		this.selectedTile=tile;
+		drawSelect=true;
+	}
 
+	private void drawSelectedTile(Graphics g) {
+		if(selectedTile!=null && drawSelect) {
+			g.drawImage(selectedTile.getSprite(), mouseX, mouseY,  32, 32, null);
+		}
 	}
 
 	@Override
 	public void mouseClicked(int x, int y) {
-		if (bMenu.getBounds().contains(x, y))
-			setGameStates(MENU);
+		if(y>=640) {
+			bottomBar.mouseClicked(x, y);
+		}else {
+			changeTile(mouseX,mouseY);
+		}
+	}
 
+	private void changeTile(int x, int y) {
+		if(selectedTile!=null) {
+			int tileX=x/32;
+			int tileY=y/32;
+			if(lastTileX==tileX && lastTileY==tileY && lastTileId==selectedTile.getId())
+				return; //ako pomeram mis u istoj plocici ili hocu da nalepim istu plocicu
+			lastTileX=tileX;
+			lastTileY=tileY;
+			lastTileId=selectedTile.getId();
+			lvl[tileY][tileX]=selectedTile.getId();
+		}
 	}
 
 	@Override
 	public void mouseMoved(int x, int y) {
-		bMenu.setMouseOver(false);
-		if (bMenu.getBounds().contains(x, y))
-			bMenu.setMouseOver(true);
-
+		if(y>=640) {
+			bottomBar.mouseMoved(x, y);
+			drawSelect=false;
+		}else {
+			//iznad 640
+			drawSelect=true;
+			mouseX = (x / 32) * 32;
+			mouseY = (y / 32) * 32;
+		}
 	}
 
 	@Override
 	public void mousePressed(int x, int y) {
-		if (bMenu.getBounds().contains(x, y))
-			bMenu.setMousePressed(true);
-
+		if(y>=640) {
+			bottomBar.mousePressed(x, y);
+		}
 	}
 
 	@Override
 	public void mouseReleased(int x, int y) {
-		bMenu.resetBooleans();
+		bottomBar.mouseReleased(x, y);
+	}
 
+	public TileManager getTileManager() {
+		return tileManager;
+	}
+
+	@Override
+	public void mouseDragged(int x, int y) {
+		if(y<640)  {
+			changeTile(x, y);
+		}
 	}
 
 }

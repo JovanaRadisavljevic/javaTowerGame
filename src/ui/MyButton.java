@@ -5,12 +5,24 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 public class MyButton {
-	private int x,y,width,height;
+	public int x,y,width,height;
 	private String text;
 	private Rectangle bounds;
 	private boolean mouseOver,mousePressed;
+	private int id;
 	
 	public MyButton(String text, int x,int y,int width,int height) {
+		this.text=text;
+		this.x=x;
+		this.y=y;
+		this.width=width;
+		this.height=height;
+		this.id=-1;
+		initBounds();
+	}
+	//for tile buttons
+	public MyButton(String text, int x,int y,int width,int height,int id) {
+		this.id=id;
 		this.text=text;
 		this.x=x;
 		this.y=y;
@@ -64,4 +76,14 @@ public class MyButton {
 		this.mouseOver=false;
 		this.mousePressed=false;
 	}
+	public int getId() {
+		return id;
+	}
+	public boolean isMouseOver() {
+		return mouseOver;
+	}
+	public boolean isMousePressed() {
+		return mousePressed;
+	}
+	
 }
